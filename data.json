@@ -1,0 +1,60 @@
+{
+    "inventory": [
+        {
+            "container": "A1",
+            "products": [
+                {
+                    "name": "Laptop",
+                    "brand": "TechMaster",
+                    "sku": "TM-LP-001",
+                    "stock": 15
+                },
+                {
+                    "name": "Mouse",
+                    "brand": "ClickRight",
+                    "sku": "CR-MS-002",
+                    "stock": 50
+                }
+            ]
+        },
+        {
+            "container": "A2",
+            "products": [
+                {
+                    "name": "Teclado",
+                    "brand": "TypeFast",
+                    "sku": "TF-KB-003",
+                    "stock": 30
+                }
+            ]
+        },
+        {
+            "container": "B1",
+            "products": [
+                {
+                    "name": "Monitor",
+                    "brand": "ViewBright",
+                    "sku": "VB-MN-004",
+                    "stock": 25
+                }
+            ]
+        },
+        {
+            "container": "B2",
+            "products": [
+                {
+                    "name": "Webcam",
+                    "brand": "CamSharp",
+                    "sku": "CS-WC-005",
+                    "stock": 40
+                },
+                {
+                    "name": "Auriculares",
+                    "brand": "SoundWave",
+                    "sku": "SW-HP-006",
+                    "stock": 60
+                }
+            ]
+        }
+    ]
+}
