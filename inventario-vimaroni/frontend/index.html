@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="navbar-menu">
+            <li class="navbar-item active" onclick="showInventario()">Inventario</li>
+            <li class="navbar-item" onclick="showAddProduct()">Agregar producto</li>
+            <li class="navbar-item" onclick="showDeleteProduct()">Eliminar productos</li>
+        </ul>
+        <div id="search-bar" class="navbar-search">
+            <button id="search-icon" class="search-icon" onclick="toggleSearchBar()" aria-label="Buscar">
+                <!-- SVG lupa profesional -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                    <line x1="17" y1="17" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div id="search-form" class="hidden">
+                <input type="text" id="search-input" placeholder="Buscar por nombre o SKU...">
+            </div>
+        </div>
+    </nav>
+    <div id="search-result" class="hidden"></div>
+    <div class="add-product-container hidden" id="add-product-container">
+        <h2>Agregar producto</h2>
+        <form id="add-product-form">
+            <input type="text" id="nombre" placeholder="Nombre" required>
+            <input type="text" id="marca" placeholder="Marca" required>
+            <input type="text" id="sku" placeholder="SKU" required>
+            <input type="number" id="stock" placeholder="Stock" required min="0">
+            <input type="text" id="zona" placeholder="Zona (ej: A, B, C...)" required>
+            <input type="text" id="contenedor" placeholder="Contenedor (ej: A1, B2...)" required>
+            <button type="submit">Agregar</button>
+        </form>
+        <div id="add-product-msg"></div>
+    </div>
+    <div class="delete-product-container hidden" id="delete-product-container">
+        <h2>Buscar y editar/eliminar producto</h2>
+        <div class="delete-search-bar">
+            <input type="text" id="delete-search-input" placeholder="Buscar por nombre o SKU...">
+            <button class="delete-search-btn" onclick="triggerDeleteSearch()" aria-label="Buscar">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                    <line x1="17" y1="17" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <div id="delete-search-result"></div>
+    </div>
+    <div id="zones-container">
+        <!-- Las zonas y contenedores se generan aquí -->
+    </div>
+    <div id="product-details" class="hidden">
+        <h2>Productos en <span id="container-name"></span></h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Marca</th>
+                    <th>SKU</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody id="products-list">
+                <!-- Productos aquí -->
+            </tbody>
+        </table>
+        <button onclick="closeDetails()">Cerrar</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+/* --- NAVBAR --- */
+.navbar {
+    width: 100%;
+    background: linear-gradient(90deg, #48b1f3 0%, #0077b6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 70px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 12px rgba(44,62,80,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 200;
+}
+
+.navbar-brand {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.navbar-menu {
+    list-style: none;
+    display: flex;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-item {
+    color: #fff;
+    font-size: 1.1rem;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.navbar-item.active,
+.navbar-item:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.navbar-search {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    min-width: 250px;
+    margin-left: auto;
+    gap: 8px;
+    position: relative;
+    top: 0;
+    right: 0;
+}
+
+/* --- LUPA --- */
+.search-icon {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-right: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    height: 40px;
+    width: 40px;
+    justify-content: center;
+    box-shadow: none;
+    outline: none;
+}
+
+.search-icon svg {
+    display: block;
+    width: 28px;
+    height: 28px;
+    color: #fff;
+    background: none;
+    transition: color 0.2s;
+}
+
+.search-icon:hover svg {
+    color: #48b1f3;
+}
+
+.search-icon:active,
+.search-icon:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* --- BUSCADOR --- */
+#search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+    margin-top: 20px;
+}
+
+#search-form.hidden {
+    display: none;
+}
+
+#search-input {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    width: 180px;
+}
+
+#search-form button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #fff;
+    color: #000000;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+#search-form button:hover {
+    background: #0077b6;
+    color: #fff;
+}
+
+#search-result {
+    max-width: 400px;
+    margin: 18px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(44,62,80,0.10);
+    padding: 18px 24px;
+    text-align: left;
+}
+
+.search-card h3 {
+    margin-top: 0;
+    color: #0077b6;
+}
+
+.hidden {
+    display: none;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+    margin: 0;
+    padding: 0;
+}
+
+.add-product-container {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
+    padding: 24px 32px;
+    max-width: 500px;
+    margin: 32px auto 0 auto;
+}
+
+.add-product-container h2 {
+    color: #0077b6;
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 1.2rem;
+}
+
+#add-product-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+#add-product-form input {
+    flex: 1 1 45%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #b0c4de;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+#add-product-form button {
+    flex: 1 1 100%;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: #0077b6;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+
+#add-product-form button:hover {
+    background: #48b1f3;
+}
+
+#add-product-msg {
+    margin-top: 10px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+#zones-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px;
+    margin: 40px auto;
+    max-width: 1200px;
+}
+
+.zone {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
+    padding: 24px 32px;
+    min-width: 220px;
+    transition: transform 0.2s;
+}
+
+.zone:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+}
+
+.zone h2 {
+    margin-top: 0;
+    color: #0077b6;
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+    letter-spacing: 1px;
+}
+
+.zone button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px 0;
+    border: none;
+    background: linear-gradient(90deg, #48b1f3 0%, #0077b6 100%);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+    transition: background 0.2s, transform 0.2s;
+}
+
+.zone button:hover {
+    background: linear-gradient(90deg, #0077b6 0%, #48b1f3 100%);
+    transform: scale(1.05);
+}
+
+#product-details {
+    background: #fff;
+    padding: 32px 40px;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 340px;
+    z-index: 100;
+    max-width: 90vw;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) scale(0.95);}
+    to { opacity: 1; transform: translateX(-50%) scale(1);}
+}
+
+#product-details h2 {
+    color: #0077b6;
+    margin-top: 0;
+    font-size: 1.2rem;
+    margin-bottom: 18px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    border: none;
+    padding: 12px 10px;
+    text-align: left;
+}
+
+th {
+    background: linear-gradient(90deg, #48b1f3 0%, #0077b6 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+td {
+    background: #fff;
+    color: #2d3a4b;
+    font-size: 0.98rem;
+    border-bottom: 1px solid #e0eafc;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+button {
+    margin-top: 18px;
+    padding: 10px 24px;
+    background: #0077b6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+    transition: background 0.2s, transform 0.2s;
+}
+
+button:hover {
+    background: #48b1f3;
+    transform: scale(1.05);
+}
+
+/* --- ELIMINAR/EDITAR PRODUCTOS --- */
+.delete-product-container {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
+    padding: 24px 32px;
+    max-width: 600px;
+    margin: 32px auto 0 auto;
+}
+
+.delete-product-container h2 {
+    color: #0077b6;
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 1.2rem;
+}
+
+.delete-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+#delete-search-input {
+    flex: 1 1 80%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #b0c4de;
+    font-size: 1rem;
+    background: #f8f9fa;
+    transition: border 0.2s;
+}
+
+#delete-search-input:focus {
+    border: 1.5px solid #0077b6;
+    outline: none;
+}
+
+.delete-search-btn {
+    background: #0077b6;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+    color: #fff;
+}
+
+.delete-search-btn svg {
+    color: #fff;
+    width: 22px;
+    height: 22px;
+}
+
+.delete-search-btn:hover {
+    background: #48b1f3;
+}
+
+.delete-card {
+    border: 1px solid #e0eafc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #f8f9fa;
+}
+
+.delete-card input {
+    border: 1px solid #b0c4de;
+    border-radius: 6px;
+    padding: 6px;
+    margin-left: 8px;
+    font-size: 1rem;
+    width: 60%;
+}
+
+.delete-card button {
+    margin: 8px 8px 0 0;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #0077b6;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.delete-card button:hover {
+    background: #48b1f3;
+}
