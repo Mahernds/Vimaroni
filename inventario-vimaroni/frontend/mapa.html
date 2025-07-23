@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <title>Mapa del Lugar - Inventario Vimaroni</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+      min-height: 100vh;
+    }
+    .header-mapa {
+      background: #0077b6;
+      color: #fff;
+      padding: 24px 0 12px 0;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      letter-spacing: 1px;
+    }
+    .header-mapa h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+    .header-mapa p {
+      margin: 8px 0 0 0;
+      font-size: 1.1rem;
+      color: #caf0f8;
+    }
+    #map {
+      width: 90vw;
+      max-width: 1100px;
+      height: 70vh;
+      margin: 32px auto 0 auto;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+      border: 2px solid #0077b6;
+      display: block;
+    }
+    .volver-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      padding: 12px 36px;
+      background: #0077b6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      transition: background 0.2s;
+    }
+    .volver-btn:hover {
+      background: #023e8a;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-mapa">
+    <h1>Mapa del Lugar</h1>
+    <p>Haz clic en los marcadores para ver información de cada bodega o almacén.<br>
+    Usa este plano para ubicarte fácilmente en el terreno.</p>
+  </div>
+  <div id="map"></div>
+  <button class="volver-btn" onclick="window.location.href='index.html'">Volver a la página principal</button>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Cambia la ruta por tu imagen de plano
+    var imageUrl = 'mapa-almendros.jpg';
+    // Tamaño real de la imagen en píxeles (ejemplo: 1200x800)
+    var imageBounds = [[0,0], [800,1200]];
+
+    var map = L.map('map', {
+      crs: L.CRS.Simple,
+      minZoom: -2
+    });
+
+    L.imageOverlay(imageUrl, imageBounds).addTo(map);
+    map.fitBounds(imageBounds);
+
+    // Ejemplo: marcador en una bodega
+    //var marker = L.marker([400, 600]).addTo(map)
+      //.bindPopup('<b>Bodega Central</b><br>Haz clic para más info.');
+
+    // Puedes agregar más marcadores o áreas aquí
+  </script>

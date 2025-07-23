@@ -3,15 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Inventario</title>
+    <title>Vimaroni - Sistema de Inventario</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+      /* Puedes ajustar estilos aquí si lo deseas */
+    </style>
 </head>
 <body>
     <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="logooo.png" alt="Vimaroni" class="navbar-logo" onclick="showInventario()">
+        </div>
         <ul class="navbar-menu">
-            <li class="navbar-item active" onclick="showInventario()">Inventario</li>
             <li class="navbar-item" onclick="showAddProduct()">Agregar producto</li>
-            <li class="navbar-item" onclick="showDeleteProduct()">Eliminar productos</li>
+            <li class="navbar-item" onclick="showDeleteProduct()">Editar productos</li>
+            <li class="navbar-item" onclick="showMapaGalpon()">Mapa del galpón</li>
         </ul>
         <div id="search-bar" class="navbar-search">
             <button id="search-icon" class="search-icon" onclick="toggleSearchBar()" aria-label="Buscar">
@@ -33,9 +39,8 @@
             <input type="text" id="nombre" placeholder="Nombre" required>
             <input type="text" id="marca" placeholder="Marca" required>
             <input type="text" id="sku" placeholder="SKU" required>
-            <input type="number" id="stock" placeholder="Stock" required min="0">
             <input type="text" id="zona" placeholder="Zona (ej: A, B, C...)" required>
-            <input type="text" id="contenedor" placeholder="Contenedor (ej: A1, B2...)" required>
+            <input type="text" id="contenedor" placeholder="Contenedor (ej: 1, 2, 3...)" required>
             <button type="submit">Agregar</button>
         </form>
         <div id="add-product-msg"></div>
@@ -53,6 +58,30 @@
         </div>
         <div id="delete-search-result"></div>
     </div>
+
+    <!-- Nuevo contenedor para el mapa del galpón -->
+    <div class="mapa-galpon-container hidden" id="mapa-galpon-container">
+        <h2>Mapa del Galpón</h2>
+        <p class="mapa-descripcion">Ubicación visual de zonas y contenedores para orientación del personal</p>
+        
+        <div class="mapa-galpon">
+            <img src="mapa-almendros.jpg" class="imagen-galpon" alt="Plano del galpón">
+            
+            <!-- Las zonas y contenedores se generarán aquí dinámicamente -->
+            <div id="marcadores-container"></div>
+        </div>
+        
+        <div class="mapa-leyenda">
+            <h3>Leyenda:</h3>
+            <div class="leyenda-item">
+                <span class="leyenda-zona"></span> Zonas
+            </div>
+            <div class="leyenda-item">
+                <span class="leyenda-contenedor"></span> Contenedores
+            </div>
+        </div>
+    </div>
+    
     <div id="zones-container">
         <!-- Las zonas y contenedores se generan aquí -->
     </div>
@@ -64,7 +93,6 @@
                     <th>Nombre</th>
                     <th>Marca</th>
                     <th>SKU</th>
-                    <th>Stock</th>
                 </tr>
             </thead>
             <tbody id="products-list">
@@ -73,6 +101,7 @@
         </table>
         <button onclick="closeDetails()">Cerrar</button>
     </div>
+    <div id="notificacion" style="display:none;position:fixed;top:30px;left:50%;transform:translateX(-50%);background:#0077b6;color:#fff;padding:16px 32px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:1.1rem;z-index:9999;text-align:center;"></div>
     <script src="script.js"></script>
 </body>
 </html>
