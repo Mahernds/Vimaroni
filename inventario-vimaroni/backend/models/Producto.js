@@ -6,7 +6,9 @@ const productoSchema = new mongoose.Schema({
     sku: String,
     stock: Number,
     zona: String,
-    contenedor: String
+    contenedor: String,
+    createdBy: { type: String, default: 'desconocido' },
+    createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Producto', productoSchema);

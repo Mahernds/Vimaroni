@@ -33,15 +33,26 @@ async function renderZones() {
         return;
     }
 
-    // Ordena las zonas alfabéticamente
-    const zonasOrdenadas = Object.keys(zonas).sort();
+    // Ordena las zonas alfabéticamente (A, B, C, D, etc.)
+    const zonasOrdenadas = Object.keys(zonas).sort((a, b) => {
+        // Ordenamiento natural que maneja números y letras correctamente
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    console.log('Zonas ordenadas:', zonasOrdenadas);
 
     for (const zona of zonasOrdenadas) {
         const zoneDiv = document.createElement('div');
         zoneDiv.className = 'zone';
         const nombreZona = zona.toLowerCase().includes('zona') ? zona : `Zona ${zona}`;
         zoneDiv.innerHTML = `<h2>${nombreZona}</h2>`;
-        for (const contenedor in zonas[zona]) {
+        
+        // También ordenar los contenedores dentro de cada zona
+        const contenedoresOrdenados = Object.keys(zonas[zona]).sort((a, b) => {
+            return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+        });
+        
+        for (const contenedor of contenedoresOrdenados) {
             const containerBtn = document.createElement('button');
             containerBtn.textContent = contenedor;
             containerBtn.onclick = () => showProducts(zona, contenedor, zonas[zona][contenedor]);
@@ -145,29 +156,89 @@ document.getElementById('add-product-form').addEventListener('submit', async fun
         return;
     }
 
-    const productos = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(sku)}`).then(res => res.json());
-    const existente = productos.find(p => p.zona === zona && p.contenedor === contenedor && p.sku === sku);
-
-    if (existente) {
-        msg.textContent = 'Ya existe un producto con ese SKU en esa zona y contenedor.';
-        msg.style.color = 'red';
-        return;
-    } else {
-        const res = await fetch(API_URL, {
-            method: 'POST',
+    // Verificar si estamos editando o creando
+    const isEditing = window.editingProductId;
+    
+    if (isEditing) {
+        // Actualizar producto existente
+        const res = await fetch(`${API_URL}/${window.editingProductId}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ nombre, marca, sku, zona, contenedor })
         });
+        
         if (res.ok) {
-            msg.textContent = 'Producto agregado correctamente.';
+            msg.textContent = 'Producto actualizado correctamente.';
             msg.style.color = '#0077b6';
             this.reset();
             renderZones();
-            mostrarNotificacion('Producto agregado correctamente', '#28a745');
+            mostrarNotificacion('Producto actualizado correctamente', '#28a745');
+            
+            // Restablecer modo de edición
+            window.editingProductId = null;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Agregar Producto';
+            }
+            
+            // Actualizar panel admin si está visible
+            if (!document.getElementById('admin-panel-container').classList.contains('hidden')) {
+                loadAdminProductsTable();
+            }
         } else {
-            msg.textContent = 'Error al agregar producto.';
+            const error = await res.json();
+            msg.textContent = error.error || 'Error al actualizar producto.';
             msg.style.color = 'red';
-            mostrarNotificacion('Error al agregar producto.', '#d90429');
+            mostrarNotificacion('Error al actualizar producto.', '#d90429');
+        }
+    } else {
+        // Crear nuevo producto
+        const productos = await fetch(`${API_URL}/buscar?q=${encodeURIComponent(sku)}`).then(res => res.json());
+        const existente = productos.find(p => p.zona === zona && p.contenedor === contenedor && p.sku === sku);
+
+        if (existente) {
+            msg.textContent = 'Ya existe un producto con ese SKU en esa zona y contenedor.';
+            msg.style.color = 'red';
+            return;
+        } else {
+            // Obtener el usuario actual
+            const currentUser = localStorage.getItem('vimaroni_user') || 'desconocido';
+            
+            // Crear fecha en zona horaria de Chile
+            const now = new Date();
+            const chileDate = new Date(now.toLocaleString("en-US", {timeZone: "America/Santiago"}));
+            
+            console.log('Enviando producto con usuario:', currentUser, 'y fecha:', chileDate.toISOString());
+            
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    nombre, 
+                    marca, 
+                    sku, 
+                    zona, 
+                    contenedor,
+                    createdBy: currentUser,
+                    createdAt: chileDate.toISOString()
+                })
+            });
+            if (res.ok) {
+                msg.textContent = 'Producto agregado correctamente.';
+                msg.style.color = '#0077b6';
+                this.reset();
+                renderZones();
+                mostrarNotificacion('Producto agregado correctamente', '#28a745');
+                
+                // Actualizar panel admin si está visible
+                if (!document.getElementById('admin-panel-container').classList.contains('hidden')) {
+                    loadAdminProductsTable();
+                }
+            } else {
+                msg.textContent = 'Error al agregar producto.';
+                msg.style.color = 'red';
+                mostrarNotificacion('Error al agregar producto.', '#d90429');
+            }
         }
     }
 });
@@ -211,24 +282,48 @@ async function editProduct(id) {
     }
 }
 
-function showAddProduct() {
-    document.getElementById('add-product-container').classList.remove('hidden');
+function hideAllContainers() {
+    // Renovar sesión al navegar
+    if (localStorage.getItem('vimaroni_user')) {
+        localStorage.setItem('vimaroni_session', Date.now());
+    }
+    
+    document.getElementById('add-product-container').classList.add('hidden');
     document.getElementById('zones-container').classList.add('hidden');
     document.getElementById('product-details').classList.add('hidden');
     document.getElementById('search-result').classList.add('hidden');
     document.getElementById('delete-product-container').classList.add('hidden');
     document.getElementById('mapa-galpon-container').classList.add('hidden');
+    document.getElementById('supervisor-panel-container').classList.add('hidden');
+    document.getElementById('bodeguero-panel-container').classList.add('hidden');
+    document.getElementById('operador-panel-container').classList.add('hidden');
+    document.getElementById('admin-panel-container').classList.add('hidden');
+}
+
+function showAddProduct() {
+    hideAllContainers();
+    document.getElementById('add-product-container').classList.remove('hidden');
+    
+    // Limpiar modo de edición si está activo
+    if (window.editingProductId) {
+        window.editingProductId = null;
+        const submitBtn = document.querySelector('#add-product-form button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = 'Agregar Producto';
+        }
+        // Limpiar el formulario
+        document.getElementById('add-product-form').reset();
+        document.getElementById('add-product-msg').textContent = '';
+    }
     
     // Actualizar navbar
     updateNavbar('agregar');
 }
 
 function showInventario() {
-    document.getElementById('add-product-container').classList.add('hidden');
+    hideAllContainers();
     document.getElementById('zones-container').classList.remove('hidden');
-    document.getElementById('product-details').classList.add('hidden');
     document.getElementById('search-result').classList.add('hidden');
-    document.getElementById('delete-product-container').classList.add('hidden');
     document.getElementById('mapa-galpon-container').classList.add('hidden');
     
     // Actualizar navbar
@@ -237,16 +332,20 @@ function showInventario() {
 }
 
 function showMapaGalpon() {
-    document.getElementById('add-product-container').classList.add('hidden');
-    document.getElementById('zones-container').classList.add('hidden');
-    document.getElementById('product-details').classList.add('hidden');
-    document.getElementById('search-result').classList.add('hidden');
-    document.getElementById('delete-product-container').classList.add('hidden');
+    hideAllContainers();
     document.getElementById('mapa-galpon-container').classList.remove('hidden');
     
     // Actualizar navbar
     updateNavbar('mapa');
     renderMapaGalpon();
+}
+
+function showDeleteProduct() {
+    hideAllContainers();
+    document.getElementById('delete-product-container').classList.remove('hidden');
+    
+    // Actualizar navbar
+    updateNavbar('editar');
 }
 
 function updateNavbar(activeSection) {
@@ -275,18 +374,6 @@ function updateNavbar(activeSection) {
             navItems[2].classList.add('active'); // Ahora es el tercer item
             break;
     }
-}
-
-function showDeleteProduct() {
-    document.getElementById('add-product-container').classList.add('hidden');
-    document.getElementById('zones-container').classList.add('hidden');
-    document.getElementById('product-details').classList.add('hidden');
-    document.getElementById('search-result').classList.add('hidden');
-    document.getElementById('delete-product-container').classList.remove('hidden');
-    document.getElementById('mapa-galpon-container').classList.add('hidden');
-    
-    // Actualizar navbar
-    updateNavbar('editar');
 }
 
 document.getElementById('delete-search-input').addEventListener('keydown', async function(e) {
@@ -395,8 +482,14 @@ async function renderMapaGalpon() {
             'F': { top: '15%', left: '85%' }
         };
         
-        // Renderizar TODAS las zonas predefinidas (aunque no tengan productos)
-        Object.keys(posicionesZonas).forEach(zonaKey => {
+        // Renderizar TODAS las zonas predefinidas en orden alfabético (aunque no tengan productos)
+        const zonasPredefinidasOrdenadas = Object.keys(posicionesZonas).sort((a, b) => {
+            return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+        });
+        
+        console.log('Zonas predefinidas en orden:', zonasPredefinidasOrdenadas);
+        
+        zonasPredefinidasOrdenadas.forEach(zonaKey => {
             const zonaData = zonasMap.get(zonaKey) || { zona: zonaKey, contenedores: new Set() };
             const marcadorZona = document.createElement('div');
             marcadorZona.className = 'marcador-zona';

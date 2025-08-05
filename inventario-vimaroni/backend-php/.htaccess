@@ -1,0 +1,41 @@
+RewriteEngine On
+
+# Configurar headers de seguridad
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
+
+# Permitir CORS para el dominio específico
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+
+# Redirigir requests de API a los archivos PHP correspondientes
+RewriteRule ^api/usuarios/?(.*)$ api/usuarios.php [L,QSA]
+RewriteRule ^api/productos/?(.*)$ api/productos.php [L,QSA]
+
+# Permitir archivos estáticos
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule .* - [L]
+
+# Redirigir todo lo demás al index.html (para Single Page Application)
+RewriteRule ^(?!api/).*$ index.html [L]
+
+# Configuraciones de cache para archivos estáticos
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+</FilesMatch>
+
+# Compresión GZIP
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>

@@ -7,6 +7,7 @@
     <meta name="robots" content="noindex, nofollow, noarchive">
     <meta name="googlebot" content="noindex, nofollow">
     <link rel="stylesheet" href="style.css">
+    <script src="config-frontend.js"></script>
     <style>
       /* Estilos del login */
       .login-container {
@@ -68,6 +69,117 @@
           margin-top: 10px;
           font-weight: bold;
       }
+      
+      /* Estilos para Modal de Confirmación */
+      .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 10000;
+      }
+      
+      .modal-content {
+          background: white;
+          border-radius: 15px;
+          padding: 0;
+          width: 90%;
+          max-width: 450px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+          animation: modalSlideIn 0.3s ease-out;
+      }
+      
+      @keyframes modalSlideIn {
+          from {
+              transform: translateY(-50px);
+              opacity: 0;
+          }
+          to {
+              transform: translateY(0);
+              opacity: 1;
+          }
+      }
+      
+      .modal-header {
+          background: linear-gradient(135deg, #007bff, #0056b3);
+          color: white;
+          padding: 20px;
+          border-radius: 15px 15px 0 0;
+          text-align: center;
+      }
+      
+      .modal-header h3 {
+          margin: 0;
+          font-size: 1.2em;
+      }
+      
+      .modal-body {
+          padding: 25px;
+          text-align: center;
+      }
+      
+      .modal-body p {
+          margin-bottom: 20px;
+          color: #333;
+          line-height: 1.5;
+      }
+      
+      .modal-body .input-group input {
+          width: 100%;
+          padding: 12px;
+          border: 2px solid #ddd;
+          border-radius: 8px;
+          font-size: 1em;
+          transition: border-color 0.3s;
+      }
+      
+      .modal-body .input-group input:focus {
+          outline: none;
+          border-color: #007bff;
+          box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+      }
+      
+      .modal-footer {
+          padding: 20px;
+          display: flex;
+          gap: 15px;
+          justify-content: center;
+      }
+      
+      .btn-cancel, .btn-confirm {
+          padding: 12px 25px;
+          border: none;
+          border-radius: 8px;
+          font-size: 1em;
+          cursor: pointer;
+          transition: all 0.3s;
+          font-weight: bold;
+      }
+      
+      .btn-cancel {
+          background: #6c757d;
+          color: white;
+      }
+      
+      .btn-cancel:hover {
+          background: #5a6268;
+          transform: translateY(-2px);
+      }
+      
+      .btn-confirm {
+          background: #28a745;
+          color: white;
+      }
+      
+      .btn-confirm:hover {
+          background: #218838;
+          transform: translateY(-2px);
+      }
     </style>
 </head>
 <body>
@@ -78,11 +190,12 @@
                 <img src="logooo.png" alt="Vimaroni" class="login-logo-img">
             </div>
             <h2 style="color: #0077b6; margin-bottom: 10px;">Acceso al Sistema</h2>
-            <p style="color: #6c757d; margin-bottom: 20px;">Ingresa la contraseña para continuar</p>
+            <p style="color: #6c757d; margin-bottom: 20px;">Ingresa tu usuario y contraseña</p>
             <div class="login-form">
+                <input type="text" id="username-input" placeholder="Usuario" autocomplete="off">
                 <input type="password" id="password-input" placeholder="Contraseña" autocomplete="off">
                 <button id="login-btn" onclick="checkPassword()">🔐 Acceder</button>
-                <div id="login-error" class="login-error hidden">❌ Contraseña incorrecta</div>
+                <div id="login-error" class="login-error hidden">❌ Usuario o contraseña incorrectos</div>
             </div>
         </div>
     </div>
@@ -97,18 +210,33 @@
             <li class="navbar-item" onclick="showAddProduct()">Agregar producto</li>
             <li class="navbar-item" onclick="showDeleteProduct()">Editar productos</li>
             <li class="navbar-item" onclick="showMapaGalpon()">Mapa del galpón</li>
+            <li class="navbar-item" id="supervisor-panel-btn" onclick="showSupervisorPanel()" style="display: none;">Panel Supervisor</li>
+            <li class="navbar-item" id="bodeguero-panel-btn" onclick="showBodegueroPanel()" style="display: none;">Panel Bodeguero</li>
+            <li class="navbar-item" id="operador-panel-btn" onclick="showOperadorPanel()" style="display: none;">Mi Panel</li>
+            <li class="navbar-item" id="admin-panel-btn" onclick="showAdminPanel()" style="display: none;">Panel Admin</li>
         </ul>
-        <div id="search-bar" class="navbar-search">
-            <button id="search-icon" class="search-icon" onclick="toggleSearchBar()" aria-label="Buscar">
-                <!-- SVG lupa profesional -->
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-                    <line x1="17" y1="17" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </button>
-            <div id="search-form" class="hidden">
-                <input type="text" id="search-input" placeholder="Buscar por nombre o SKU...">
+        <div class="navbar-actions">
+            <div class="session-indicator" id="session-indicator" title="Tiempo de sesión restante">
+                <span id="session-time">24h</span>
             </div>
+            <div class="welcome-message" id="welcome-message">
+                <span>👋 Hola, <strong id="user-name">Usuario</strong></span>
+            </div>
+            <div id="search-bar" class="navbar-search">
+                <button id="search-icon" class="search-icon" onclick="toggleSearchBar()" aria-label="Buscar">
+                    <!-- SVG lupa profesional -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                        <line x1="17" y1="17" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <div id="search-form" class="hidden">
+                    <input type="text" id="search-input" placeholder="Buscar por nombre o SKU...">
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()" aria-label="Cerrar Sesión" title="Cerrar Sesión">
+                ⍈
+            </button>
         </div>
     </nav>
     <div id="search-result" class="hidden"></div>
@@ -160,6 +288,271 @@
             </div>
         </div>
     </div>
+
+    <!-- Panel de Supervisor -->
+    <div class="supervisor-panel-container hidden" id="supervisor-panel-container">
+        <h2>Panel de Supervisor</h2>
+        <p class="panel-descripcion">Gestión y supervisión de equipo de trabajo</p>
+        
+        <div class="supervisor-stats">
+            <div class="stat-card">
+                <h3>📊 Estadísticas de Mi Área</h3>
+                <div id="supervisor-area-stats"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>👥 Actividad del Equipo</h3>
+                <div id="supervisor-team-activity"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>⚠️ Alertas y Revisiones</h3>
+                <div id="supervisor-alerts"></div>
+            </div>
+        </div>
+        
+        <div class="supervisor-management">
+            <h3>🔍 Productos de Mi Supervisión</h3>
+            <div class="supervisor-filters">
+                <select id="supervisor-zone-filter" onchange="applySupervisorFilters()">
+                    <option value="">Todas las zonas bajo mi supervisión</option>
+                </select>
+                <select id="supervisor-user-filter" onchange="applySupervisorFilters()">
+                    <option value="">Todos los miembros del equipo</option>
+                </select>
+            </div>
+            <div id="supervisor-products-table-container">
+                <table id="supervisor-products-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Zona</th>
+                            <th>Contenedor</th>
+                            <th>Agregado por</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supervisor-products-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Bodeguero -->
+    <div class="bodeguero-panel-container hidden" id="bodeguero-panel-container">
+        <h2>Panel de Bodeguero</h2>
+        <p class="panel-descripcion">Control de inventario y movimientos de productos</p>
+        
+        <div class="bodeguero-stats">
+            <div class="stat-card">
+                <h3>📦 Mi Inventario</h3>
+                <div id="bodeguero-inventory-stats"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>📋 Productos Agregados Hoy</h3>
+                <div id="bodeguero-daily-activity"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🏷️ Zonas Activas</h3>
+                <div id="bodeguero-zones-stats"></div>
+            </div>
+        </div>
+        
+        <div class="bodeguero-tools">
+            <h3>🔧 Herramientas de Bodeguero</h3>
+            <div class="bodeguero-actions">
+                <button onclick="generateBodegueroReport()" class="action-btn">📊 Generar Reporte</button>
+                <button onclick="showQuickAdd()" class="action-btn">⚡ Agregado Rápido</button>
+                <button onclick="validateInventory()" class="action-btn">✅ Validar Inventario</button>
+            </div>
+            
+            <div class="bodeguero-recent">
+                <h4>📝 Mis Productos Recientes</h4>
+                <div id="bodeguero-recent-products"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Operador -->
+    <div class="operador-panel-container hidden" id="operador-panel-container">
+        <h2>Mi Panel de Trabajo</h2>
+        <p class="panel-descripcion">Resumen de mi actividad y herramientas de trabajo</p>
+        
+        <div class="operador-stats">
+            <div class="stat-card">
+                <h3>📈 Mi Productividad</h3>
+                <div id="operador-productivity-stats"></div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🎯 Objetivos del Día</h3>
+                <div id="operador-daily-goals"></div>
+            </div>
+        </div>
+        
+        <div class="operador-activity">
+            <h3>📋 Mi Actividad Reciente</h3>
+            <div id="operador-recent-activity"></div>
+        </div>
+        
+        <div class="operador-tools">
+            <h3>🔧 Accesos Rápidos</h3>
+            <div class="quick-actions">
+                <button onclick="showAddProduct()" class="quick-action-btn">➕ Agregar Producto</button>
+                <button onclick="showMapaGalpon()" class="quick-action-btn">🗺️ Ver Mapa</button>
+                <button onclick="showMyStats()" class="quick-action-btn">📊 Mis Estadísticas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Administrador (solo visible para admin) -->
+    <div class="admin-panel-container hidden" id="admin-panel-container">
+        <h2>Panel de Administrador</h2>
+        <p class="admin-descripcion">Gestión completa del sistema</p>
+        
+        <!-- Pestañas del admin -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="showAdminTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="showAdminTab('users')">👥 Gestión de Usuarios</button>
+            <button class="tab-btn" onclick="showAdminTab('products')">📦 Productos</button>
+        </div>
+        
+        <!-- Tab Dashboard -->
+        <div id="admin-dashboard-tab" class="admin-tab-content">
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>Productos por Usuario</h3>
+                    <div id="user-stats"></div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Actividad Reciente</h3>
+                    <div id="recent-activity"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Gestión de Usuarios -->
+        <div id="admin-users-tab" class="admin-tab-content hidden">
+            <div class="users-management">
+                <div class="users-header">
+                    <h3>👥 Gestión de Usuarios</h3>
+                    <button onclick="showCreateUserForm()" class="create-user-btn">➕ Crear Usuario</button>
+                </div>
+                
+                <!-- Formulario para crear/editar usuario -->
+                <div id="user-form-container" class="user-form-container hidden">
+                    <h4 id="user-form-title">Crear Nuevo Usuario</h4>
+                    <form id="user-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="user-username">Usuario:</label>
+                                <input type="text" id="user-username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="user-fullname">Nombre Completo:</label>
+                                <input type="text" id="user-fullname" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="user-password">Contraseña:</label>
+                                <input type="password" id="user-password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="user-role">Rol:</label>
+                                <select id="user-role" required>
+                                    <option value="">Seleccionar rol</option>
+                                    <option value="admin">Administrador</option>
+                                    <option value="supervisor">Supervisor</option>
+                                    <option value="bodeguero">Bodeguero</option>
+                                    <option value="operador">Operador</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" id="save-user-btn">💾 Guardar Usuario</button>
+                            <button type="button" onclick="cancelUserForm()">❌ Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Tabla de usuarios -->
+                <div class="users-table-container">
+                    <table id="users-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Nombre Completo</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Creado</th>
+                                <th>Último Login</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-list">
+                            <!-- Lista de usuarios -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Productos -->
+        <div id="admin-products-tab" class="admin-tab-content hidden">
+            <div class="admin-table">
+                <h3>Historial Completo de Productos</h3>
+                
+                <!-- Filtros estilo WordPress -->
+                <div class="admin-filters">
+                    <div class="filter-group">
+                        <label for="filter-zona">Filtrar por Zona:</label>
+                        <select id="filter-zona" onchange="applyFilters()">
+                            <option value="">Todas las zonas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-usuario">Filtrar por Usuario:</label>
+                        <select id="filter-usuario" onchange="applyFilters()">
+                            <option value="">Todos los usuarios</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <button onclick="clearFilters()" class="clear-filters-btn">Limpiar filtros</button>
+                    </div>
+                    
+                    <div class="filter-results">
+                        <span id="filter-count">Mostrando todos los productos</span>
+                    </div>
+                </div>
+                
+                <table id="admin-products-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Marca</th>
+                            <th>SKU</th>
+                            <th>Zona</th>
+                            <th>Contenedor</th>
+                            <th>Creado por</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-products-list">
+                        <!-- Productos con información de usuario -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     
     <div id="zones-container">
         <!-- Las zonas y contenedores se generan aquí -->
@@ -185,62 +578,1427 @@
     </div> <!-- Cierre del main-content -->
     
     <script>
-        // 🔐 SISTEMA DE LOGIN
-        const CORRECT_PASSWORD = "vimaroni2332"; // Cambia esta contraseña
-        
-        function checkPassword() {
+        // 🔐 SISTEMA DE LOGIN CON BASE DE DATOS
+        async function checkPassword() {
+            const username = document.getElementById('username-input').value.trim();
             const password = document.getElementById('password-input').value;
             const errorDiv = document.getElementById('login-error');
             
-            if (password === CORRECT_PASSWORD) {
-                // Contraseña correcta
+            if (!username || !password) {
+                errorDiv.textContent = 'Por favor, ingresa usuario y contraseña';
+                errorDiv.classList.remove('hidden');
+                setTimeout(() => errorDiv.classList.add('hidden'), 3000);
+                return;
+            }
+            
+            try {
+                const response = await VIMARONI_API.loginUser(username, password);
+                const user = response.user;
+                const token = response.token;
+                
+                // Usuario y contraseña correctos
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-content').classList.remove('hidden');
-                // Guardar sesión por 24 horas
-                localStorage.setItem('vimaroni_session', Date.now());
-            } else {
-                // Contraseña incorrecta
-                errorDiv.classList.remove('hidden');
-                document.getElementById('password-input').value = '';
-                document.getElementById('password-input').focus();
                 
-                // Ocultar error después de 3 segundos
-                setTimeout(() => {
-                    errorDiv.classList.add('hidden');
-                }, 3000);
+                // Guardar sesión por 24 horas con el usuario, rol y token JWT
+                localStorage.setItem('vimaroni_session', Date.now());
+                localStorage.setItem('vimaroni_user', user.username);
+                localStorage.setItem('vimaroni_user_role', user.role);
+                localStorage.setItem('vimaroni_user_fullname', user.fullName);
+                localStorage.setItem('authToken', token); // 🔑 Guardar JWT token
+                
+                // Mostrar panel según el rol del usuario
+                showRolePanel(user.role);
+                
+                // Actualizar mensaje de bienvenida
+                updateWelcomeMessage();
+                
+                // Mostrar notificación de bienvenida
+                mostrarNotificacion(`¡Bienvenido ${user.fullName}!`);
+            } catch (error) {
+                console.error('Error al iniciar sesión:', error);
+                errorDiv.textContent = error.message || 'Usuario o contraseña incorrectos';
+                errorDiv.classList.remove('hidden');
+                document.getElementById('username-input').value = '';
+                document.getElementById('password-input').value = '';
+                document.getElementById('username-input').focus();
+                
+                setTimeout(() => errorDiv.classList.add('hidden'), 3000);
             }
         }
         
-        // Permitir login con Enter
+        function showRolePanel(role) {
+            // Ocultar todos los botones de panel
+            document.getElementById('admin-panel-btn').style.display = 'none';
+            document.getElementById('supervisor-panel-btn').style.display = 'none';
+            document.getElementById('bodeguero-panel-btn').style.display = 'none';
+            document.getElementById('operador-panel-btn').style.display = 'none';
+            
+            // Mostrar panel según el rol
+            switch(role) {
+                case 'admin':
+                    document.getElementById('admin-panel-btn').style.display = 'block';
+                    break;
+                case 'supervisor':
+                    document.getElementById('supervisor-panel-btn').style.display = 'block';
+                    break;
+                case 'bodeguero':
+                    document.getElementById('bodeguero-panel-btn').style.display = 'block';
+                    break;
+                case 'operador':
+                    document.getElementById('operador-panel-btn').style.display = 'block';
+                    break;
+            }
+        }
+        
+        // Función para actualizar el mensaje de bienvenida
+        function updateWelcomeMessage() {
+            const fullName = localStorage.getItem('vimaroni_user_fullname');
+            const userNameElement = document.getElementById('user-name');
+            if (fullName && userNameElement) {
+                userNameElement.textContent = fullName;
+            }
+        }
+        
+        // Permitir login con Enter en ambos campos
+        document.getElementById('username-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('password-input').focus();
+            }
+        });
+        
         document.getElementById('password-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 checkPassword();
             }
         });
-        
         // Verificar si ya está logueado (válido por 24 horas)
         window.addEventListener('load', function() {
             const session = localStorage.getItem('vimaroni_session');
+            const user = localStorage.getItem('vimaroni_user');
+            const role = localStorage.getItem('vimaroni_user_role');
             const now = Date.now();
             const twentyFourHours = 24 * 60 * 60 * 1000;
             
-            if (session && (now - session) < twentyFourHours) {
+            if (session && user && role && (now - session) < twentyFourHours) {
                 // Sesión válida, mostrar contenido
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-content').classList.remove('hidden');
+                
+                // Mostrar panel según el rol del usuario
+                showRolePanel(role);
+                
+                // Actualizar mensaje de bienvenida
+                updateWelcomeMessage();
+                
+                console.log(`Sesión válida para ${user} (${role}), tiempo restante: ${Math.round((twentyFourHours - (now - session)) / (1000 * 60))} minutos`);
             } else {
                 // Sesión expirada o no existe
                 localStorage.removeItem('vimaroni_session');
-                document.getElementById('password-input').focus();
+                localStorage.removeItem('vimaroni_user');
+                localStorage.removeItem('vimaroni_user_role');
+                localStorage.removeItem('vimaroni_user_fullname');
+                document.getElementById('username-input').focus();
             }
         });
         
-        // Función para cerrar sesión (opcional)
+        // Función para renovar sesión automáticamente
+        function renewSession() {
+            const user = localStorage.getItem('vimaroni_user');
+            if (user) {
+                localStorage.setItem('vimaroni_session', Date.now());
+                console.log(`Sesión renovada para ${user}`);
+            }
+        }
+        
+        // Renovar sesión cada 30 minutos automáticamente
+        setInterval(renewSession, 30 * 60 * 1000);
+        
+        // Actualizar indicador de sesión cada minuto
+        setInterval(updateSessionIndicator, 60 * 1000);
+        
+        // Función para actualizar el indicador de sesión
+        function updateSessionIndicator() {
+            const session = localStorage.getItem('vimaroni_session');
+            const user = localStorage.getItem('vimaroni_user');
+            const indicator = document.getElementById('session-indicator');
+            const timeSpan = document.getElementById('session-time');
+            
+            if (!session || !user || !indicator) return;
+            
+            const now = Date.now();
+            const sessionStart = parseInt(session);
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            const timeLeft = twentyFourHours - (now - sessionStart);
+            
+            if (timeLeft <= 0) {
+                // Sesión expirada
+                logout();
+                return;
+            }
+            
+            // Calcular tiempo restante
+            const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            // Actualizar texto
+            if (hoursLeft > 0) {
+                timeSpan.textContent = `${hoursLeft}h ${minutesLeft}m`;
+            } else {
+                timeSpan.textContent = `${minutesLeft}m`;
+            }
+            
+            // Cambiar color según tiempo restante
+            indicator.className = 'session-indicator';
+            if (timeLeft < 60 * 60 * 1000) { // Menos de 1 hora
+                indicator.classList.add('danger');
+            } else if (timeLeft < 2 * 60 * 60 * 1000) { // Menos de 2 horas
+                indicator.classList.add('warning');
+            }
+        }
+        
+        // Inicializar indicador de sesión al cargar
+        setTimeout(updateSessionIndicator, 1000);
+        
+        // Renovar sesión en cada interacción del usuario
+        document.addEventListener('click', function(e) {
+            // Solo renovar si está logueado
+            if (localStorage.getItem('vimaroni_user')) {
+                renewSession();
+            }
+        });
+        
+        // Función para cerrar sesión
         function logout() {
+            const user = localStorage.getItem('vimaroni_user');
+            console.log(`Cerrando sesión de ${user}`);
             localStorage.removeItem('vimaroni_session');
+            localStorage.removeItem('vimaroni_user');
+            localStorage.removeItem('vimaroni_user_role');
+            localStorage.removeItem('vimaroni_user_fullname');
+            localStorage.removeItem('authToken'); // 🔑 Limpiar JWT token
             location.reload();
         }
+        
+        // Función para mostrar notificación
+        function mostrarNotificacion(mensaje) {
+            const notif = document.getElementById('notificacion');
+            notif.textContent = mensaje;
+            notif.style.display = 'block';
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 3000);
+        }
+        
+        // � Función para hacer requests autenticados con JWT
+        async function authenticatedFetch(url, options = {}) {
+            const token = localStorage.getItem('vimaroni_token');
+            
+            if (!token) {
+                // Si no hay token, redirigir al login
+                localStorage.clear();
+                location.reload();
+                return;
+            }
+            
+            // Añadir el token al header Authorization
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...options.headers
+            };
+            
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+            
+            // Si el token es inválido (401 o 403), limpiar sesión y recargar
+            if (response.status === 401 || response.status === 403) {
+                localStorage.clear();
+                mostrarNotificacion('Sesión expirada. Por favor, inicia sesión nuevamente.', '#d90429');
+                setTimeout(() => location.reload(), 2000);
+                return;
+            }
+            
+            return response;
+        }
+        
+        // �🔧 FUNCIONES DEL PANEL SUPERVISOR
+        function showSupervisorPanel() {
+            hideAllContainers();
+            document.getElementById('supervisor-panel-container').classList.remove('hidden');
+            renewSession();
+            loadSupervisorData();
+        }
+        
+        async function loadSupervisorData() {
+            await loadSupervisorAreaStats();
+            await loadSupervisorTeamActivity();
+            await loadSupervisorAlerts();
+            await loadSupervisorProducts();
+        }
+        
+        async function loadSupervisorAreaStats() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener todas las zonas reales del inventario
+                const allZones = [...new Set(products.map(p => p.zona))];
+                
+                const today = new Date().toDateString();
+                const todayProducts = products.filter(p => 
+                    p.createdAt && new Date(p.createdAt).toDateString() === today
+                );
+                
+                const thisWeek = new Date();
+                thisWeek.setDate(thisWeek.getDate() - 7);
+                const weekProducts = products.filter(p => 
+                    p.createdAt && new Date(p.createdAt) >= thisWeek
+                );
+                
+                const statsHTML = `
+                    <div class="stat-item">
+                        <span class="stat-number">${products.length}</span>
+                        <span class="stat-label">Total productos</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${todayProducts.length}</span>
+                        <span class="stat-label">Agregados hoy</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${weekProducts.length}</span>
+                        <span class="stat-label">Esta semana</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${allZones.length}</span>
+                        <span class="stat-label">Zonas activas</span>
+                    </div>
+                `;
+                
+                document.getElementById('supervisor-area-stats').innerHTML = statsHTML;
+            } catch (error) {
+                console.error('Error al cargar estadísticas del supervisor:', error);
+            }
+        }
+        
+        async function loadSupervisorTeamActivity() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Actividad real de todos los usuarios (excepto admin y supervisor)
+                const teamMembers = [...new Set(products.map(p => p.createdBy))].filter(user => 
+                    user && user !== 'admin' && user !== 'supervisor'
+                );
+                
+                const teamActivity = {};
+                
+                products.forEach(product => {
+                    const user = product.createdBy;
+                    if (user && teamMembers.includes(user)) {
+                        teamActivity[user] = (teamActivity[user] || 0) + 1;
+                    }
+                });
+                
+                let activityHTML = '';
+                if (Object.keys(teamActivity).length > 0) {
+                    Object.entries(teamActivity)
+                        .sort(([,a], [,b]) => b - a) // Ordenar por cantidad descendente
+                        .forEach(([member, count]) => {
+                            activityHTML += `
+                                <div class="team-member">
+                                    <span class="member-name">${member.charAt(0).toUpperCase() + member.slice(1)}</span>
+                                    <span class="member-activity">${count} productos</span>
+                                </div>
+                            `;
+                        });
+                } else {
+                    activityHTML = '<p>No hay actividad del equipo registrada</p>';
+                }
+                
+                document.getElementById('supervisor-team-activity').innerHTML = activityHTML;
+            } catch (error) {
+                console.error('Error al cargar actividad del equipo:', error);
+            }
+        }
+        
+        async function loadSupervisorAlerts() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                let alertsHTML = '';
+                let alertCount = 0;
+                
+                // Verificar si hay productos agregados en las últimas 24 horas que necesiten revisión
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const recentProducts = products.filter(p => 
+                    p.createdAt && new Date(p.createdAt) >= yesterday
+                );
+                
+                if (recentProducts.length > 0) {
+                    alertsHTML += `
+                        <div class="alert-item">
+                            <span class="alert-icon">📋</span>
+                            <span class="alert-text">${recentProducts.length} productos agregados en las últimas 24h</span>
+                        </div>
+                    `;
+                    alertCount++;
+                }
+                
+                // Verificar zonas con alta actividad (más de 10 productos)
+                const zoneStats = {};
+                products.forEach(product => {
+                    zoneStats[product.zona] = (zoneStats[product.zona] || 0) + 1;
+                });
+                
+                const busyZones = Object.entries(zoneStats).filter(([zone, count]) => count > 10);
+                if (busyZones.length > 0) {
+                    busyZones.forEach(([zone, count]) => {
+                        alertsHTML += `
+                            <div class="alert-item">
+                                <span class="alert-icon">⚠️</span>
+                                <span class="alert-text">Zona ${zone} tiene ${count} productos (alta densidad)</span>
+                            </div>
+                        `;
+                        alertCount++;
+                    });
+                }
+                
+                // Verificar si hay productos sin usuario asignado
+                const unknownProducts = products.filter(p => !p.createdBy || p.createdBy === 'desconocido');
+                if (unknownProducts.length > 0) {
+                    alertsHTML += `
+                        <div class="alert-item">
+                            <span class="alert-icon">❓</span>
+                            <span class="alert-text">${unknownProducts.length} productos sin usuario asignado</span>
+                        </div>
+                    `;
+                    alertCount++;
+                }
+                
+                if (alertCount === 0) {
+                    alertsHTML = `
+                        <div class="alert-item">
+                            <span class="alert-icon">✅</span>
+                            <span class="alert-text">No hay alertas pendientes</span>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('supervisor-alerts').innerHTML = alertsHTML;
+            } catch (error) {
+                console.error('Error al cargar alertas:', error);
+                document.getElementById('supervisor-alerts').innerHTML = `
+                    <div class="alert-item">
+                        <span class="alert-icon">❌</span>
+                        <span class="alert-text">Error al cargar alertas</span>
+                    </div>
+                `;
+            }
+        }
+        
+        async function loadSupervisorProducts() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Mostrar todos los productos reales (el supervisor supervisa todo el inventario)
+                let tableHTML = '';
+                if (products.length > 0) {
+                    products
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Más recientes primero
+                        .forEach(product => {
+                            const date = product.createdAt ? new Date(product.createdAt).toLocaleDateString('es-CL') : 'N/A';
+                            tableHTML += `
+                                <tr>
+                                    <td>${product.nombre}</td>
+                                    <td>${product.zona}</td>
+                                    <td>${product.contenedor}</td>
+                                    <td>${product.createdBy || 'Desconocido'}</td>
+                                    <td>${date}</td>
+                                    <td>
+                                        <button onclick="validateProduct('${product._id}')" class="validate-btn">✅ Validar</button>
+                                        <button onclick="editProduct('${product._id}')" class="edit-btn">✏️ Editar</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                } else {
+                    tableHTML = '<tr><td colspan="6">No hay productos registrados en el inventario</td></tr>';
+                }
+                
+                document.getElementById('supervisor-products-list').innerHTML = tableHTML;
+            } catch (error) {
+                console.error('Error al cargar productos del supervisor:', error);
+                document.getElementById('supervisor-products-list').innerHTML = '<tr><td colspan="6">Error al cargar productos</td></tr>';
+            }
+        }
+        
+        // 🔧 FUNCIONES DEL PANEL BODEGUERO
+        function showBodegueroPanel() {
+            hideAllContainers();
+            document.getElementById('bodeguero-panel-container').classList.remove('hidden');
+            renewSession();
+            loadBodegueroData();
+        }
+        
+        async function loadBodegueroData() {
+            await loadBodegueroInventoryStats();
+            await loadBoguereroDailyActivity();
+            await loadBodegueroZonesStats();
+            await loadBodegueroRecentProducts();
+        }
+        
+        async function loadBodegueroInventoryStats() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener usuario actual
+                const currentUser = localStorage.getItem('vimaroni_user');
+                
+                // Productos agregados por el bodeguero actual
+                const myProducts = products.filter(p => p.createdBy === currentUser);
+                const totalZones = [...new Set(myProducts.map(p => p.zona))].length;
+                const totalContainers = [...new Set(myProducts.map(p => p.zona + p.contenedor))].length;
+                
+                const statsHTML = `
+                    <div class="stat-item">
+                        <span class="stat-number">${myProducts.length}</span>
+                        <span class="stat-label">Productos agregados por mí</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${totalZones}</span>
+                        <span class="stat-label">Zonas que manejo</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${totalContainers}</span>
+                        <span class="stat-label">Contenedores activos</span>
+                    </div>
+                `;
+                
+                document.getElementById('bodeguero-inventory-stats').innerHTML = statsHTML;
+            } catch (error) {
+                console.error('Error al cargar estadísticas del bodeguero:', error);
+            }
+        }
+        
+        async function loadBoguereroDailyActivity() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener usuario actual
+                const currentUser = localStorage.getItem('vimaroni_user');
+                
+                const today = new Date().toDateString();
+                const todayProducts = products.filter(p => 
+                    p.createdBy === currentUser && 
+                    p.createdAt && 
+                    new Date(p.createdAt).toDateString() === today
+                );
+                
+                const thisWeek = new Date();
+                thisWeek.setDate(thisWeek.getDate() - 7);
+                const weekProducts = products.filter(p => 
+                    p.createdBy === currentUser && 
+                    p.createdAt && 
+                    new Date(p.createdAt) >= thisWeek
+                );
+                
+                const activityHTML = `
+                    <div class="stat-item">
+                        <span class="stat-number">${todayProducts.length}</span>
+                        <span class="stat-label">Productos hoy</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${weekProducts.length}</span>
+                        <span class="stat-label">Esta semana</span>
+                    </div>
+                `;
+                
+                document.getElementById('bodeguero-daily-activity').innerHTML = activityHTML;
+            } catch (error) {
+                console.error('Error al cargar actividad diaria:', error);
+            }
+        }
+        
+        async function loadBodegueroZonesStats() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener usuario actual
+                const currentUser = localStorage.getItem('vimaroni_user');
+                
+                const myProducts = products.filter(p => p.createdBy === currentUser);
+                const zoneStats = {};
+                
+                myProducts.forEach(product => {
+                    zoneStats[product.zona] = (zoneStats[product.zona] || 0) + 1;
+                });
+                
+                let zonesHTML = '';
+                if (Object.keys(zoneStats).length > 0) {
+                    Object.entries(zoneStats)
+                        .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true })) // Ordenar zonas
+                        .forEach(([zone, count]) => {
+                            zonesHTML += `
+                                <div class="zone-stat">
+                                    <span class="zone-name">Zona ${zone}</span>
+                                    <span class="zone-count">${count} productos</span>
+                                </div>
+                            `;
+                        });
+                } else {
+                    zonesHTML = '<p>No has agregado productos aún</p>';
+                }
+                
+                document.getElementById('bodeguero-zones-stats').innerHTML = zonesHTML;
+            } catch (error) {
+                console.error('Error al cargar estadísticas de zonas:', error);
+            }
+        }
+        
+        async function loadBodegueroRecentProducts() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener usuario actual
+                const currentUser = localStorage.getItem('vimaroni_user');
+                
+                const myRecentProducts = products
+                    .filter(p => p.createdBy === currentUser)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 5);
+                
+                let recentHTML = '';
+                if (myRecentProducts.length > 0) {
+                    myRecentProducts.forEach(product => {
+                        const date = product.createdAt ? new Date(product.createdAt).toLocaleDateString('es-CL') : 'N/A';
+                        const time = product.createdAt ? new Date(product.createdAt).toLocaleTimeString('es-CL', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : '';
+                        
+                        recentHTML += `
+                            <div class="recent-product">
+                                <strong>${product.nombre}</strong> - Zona ${product.zona}${product.contenedor}
+                                <span class="recent-date">${date} ${time}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    recentHTML = '<p>No has agregado productos aún</p>';
+                }
+                
+                document.getElementById('bodeguero-recent-products').innerHTML = recentHTML;
+            } catch (error) {
+                console.error('Error al cargar productos recientes:', error);
+            }
+        }
+        
+        // 🔧 FUNCIONES DEL PANEL OPERADOR
+        function showOperadorPanel() {
+            hideAllContainers();
+            document.getElementById('operador-panel-container').classList.remove('hidden');
+            renewSession();
+            loadOperadorData();
+        }
+        
+        async function loadOperadorData() {
+            await loadOperadorProductivityStats();
+            await loadOperadorDailyGoals();
+            await loadOperadorRecentActivity();
+        }
+        
+        async function loadOperadorProductivityStats() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener usuario actual
+                const currentUser = localStorage.getItem('vimaroni_user');
+                
+                const myProducts = products.filter(p => p.createdBy === currentUser);
+                const today = new Date().toDateString();
+                const todayProducts = myProducts.filter(p => 
+                    p.createdAt && new Date(p.createdAt).toDateString() === today
+                );
+                
+                const thisWeek = new Date();
+                thisWeek.setDate(thisWeek.getDate() - 7);
+                const weekProducts = myProducts.filter(p => 
+                    p.createdAt && new Date(p.createdAt) >= thisWeek
+                );
+                
+                const thisMonth = new Date();
+                thisMonth.setDate(thisMonth.getDate() - 30);
+                const monthProducts = myProducts.filter(p => 
+                    p.createdAt && new Date(p.createdAt) >= thisMonth
+                );
+                
+                const statsHTML = `
+                    <div class="productivity-stat">
+                        <span class="prod-number">${myProducts.length}</span>
+                        <span class="prod-label">Total productos</span>
+                    </div>
+                    <div class="productivity-stat">
+                        <span class="prod-number">${todayProducts.length}</span>
+                        <span class="prod-label">Hoy</span>
+                    </div>
+                    <div class="productivity-stat">
+                        <span class="prod-number">${weekProducts.length}</span>
+                        <span class="prod-label">Esta semana</span>
+                    </div>
+                    <div class="productivity-stat">
+                        <span class="prod-number">${monthProducts.length}</span>
+                        <span class="prod-label">Este mes</span>
+                    </div>
+                `;
+                
+                document.getElementById('operador-productivity-stats').innerHTML = statsHTML;
+            } catch (error) {
+                console.error('Error al cargar estadísticas de productividad:', error);
+            }
+        }
+        
+        async function loadOperadorDailyGoals() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener usuario actual
+                const currentUser = localStorage.getItem('vimaroni_user');
+                
+                const today = new Date().toDateString();
+                const todayProducts = products.filter(p => 
+                    p.createdBy === currentUser &&
+                    p.createdAt && 
+                    new Date(p.createdAt).toDateString() === today
+                );
+                
+                const myTotalProducts = products.filter(p => p.createdBy === currentUser).length;
+                const myZones = [...new Set(products.filter(p => p.createdBy === currentUser).map(p => p.zona))];
+                
+                let goalsHTML = '';
+                
+                // Objetivo: productos agregados hoy
+                const dailyGoal = 5; // Meta diaria de 5 productos
+                const dailyCompleted = todayProducts.length >= dailyGoal;
+                goalsHTML += `
+                    <div class="goal-item ${dailyCompleted ? 'completed' : 'pending'}">
+                        <span class="goal-icon">${dailyCompleted ? '✅' : '⏳'}</span>
+                        <span class="goal-text">Agregar ${dailyGoal} productos hoy (${todayProducts.length}/${dailyGoal})</span>
+                    </div>
+                `;
+                
+                // Objetivo: trabajar en múltiples zonas
+                const zoneGoal = 2;
+                const zoneCompleted = myZones.length >= zoneGoal;
+                goalsHTML += `
+                    <div class="goal-item ${zoneCompleted ? 'completed' : 'pending'}">
+                        <span class="goal-icon">${zoneCompleted ? '✅' : '⏳'}</span>
+                        <span class="goal-text">Trabajar en ${zoneGoal}+ zonas (${myZones.length} zonas activas)</span>
+                    </div>
+                `;
+                
+                // Objetivo: productos totales
+                const totalGoal = 50;
+                const totalCompleted = myTotalProducts >= totalGoal;
+                goalsHTML += `
+                    <div class="goal-item ${totalCompleted ? 'completed' : 'pending'}">
+                        <span class="goal-icon">${totalCompleted ? '✅' : '🎯'}</span>
+                        <span class="goal-text">Meta total: ${totalGoal} productos (${myTotalProducts}/${totalGoal})</span>
+                    </div>
+                `;
+                
+                document.getElementById('operador-daily-goals').innerHTML = goalsHTML;
+            } catch (error) {
+                console.error('Error al cargar objetivos diarios:', error);
+                document.getElementById('operador-daily-goals').innerHTML = '<p>Error al cargar objetivos</p>';
+            }
+        }
+        
+        async function loadOperadorRecentActivity() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/productos');
+                const products = await response.json();
+                
+                // Obtener usuario actual
+                const currentUser = localStorage.getItem('vimaroni_user');
+                
+                const myRecentProducts = products
+                    .filter(p => p.createdBy === currentUser)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 5);
+                
+                let activityHTML = '';
+                if (myRecentProducts.length > 0) {
+                    myRecentProducts.forEach(product => {
+                        const date = product.createdAt ? new Date(product.createdAt).toLocaleDateString('es-CL') : 'N/A';
+                        const time = product.createdAt ? new Date(product.createdAt).toLocaleTimeString('es-CL', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : '';
+                        
+                        activityHTML += `
+                            <div class="activity-item">
+                                <strong>${product.nombre}</strong> agregado en Zona ${product.zona}${product.contenedor}
+                                <span class="activity-time">${date} ${time}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    activityHTML = '<p>No has agregado productos aún. ¡Comienza agregando tu primer producto!</p>';
+                }
+                
+                document.getElementById('operador-recent-activity').innerHTML = activityHTML;
+            } catch (error) {
+                console.error('Error al cargar actividad reciente del operador:', error);
+            }
+        }
+        
+        // Funciones auxiliares para los paneles
+        function validateProduct(productId) {
+            // En una implementación real, esto podría agregar un campo "validado" al producto
+            const confirmation = confirm('¿Confirmar validación de este producto?');
+            if (confirmation) {
+                mostrarNotificacion('Producto validado correctamente', '#28a745');
+                // Aquí podrías hacer una llamada al backend para marcar como validado
+            }
+        }
+        
+        function generateBodegueroReport() {
+            // Generar reporte basado en datos reales del bodeguero
+            const currentUser = localStorage.getItem('vimaroni_user');
+            mostrarNotificacion(`Generando reporte de actividad de ${currentUser}...`, '#0077b6');
+            
+            // En una implementación real, esto podría generar un PDF o Excel
+            setTimeout(() => {
+                mostrarNotificacion('Reporte generado exitosamente', '#28a745');
+            }, 2000);
+        }
+        
+        function showQuickAdd() {
+            showAddProduct();
+        }
+        
+        function validateInventory() {
+            // Validación de inventario basada en datos reales
+            fetch('http://127.0.0.1:3001/api/productos')
+                .then(response => response.json())
+                .then(products => {
+                    const totalProducts = products.length;
+                    const productsWithoutUser = products.filter(p => !p.createdBy || p.createdBy === 'desconocido').length;
+                    const zones = [...new Set(products.map(p => p.zona))].length;
+                    
+                    mostrarNotificacion(`Validación completada: ${totalProducts} productos en ${zones} zonas. ${productsWithoutUser} productos sin usuario asignado.`, '#28a745');
+                })
+                .catch(error => {
+                    console.error('Error en validación:', error);
+                    mostrarNotificacion('Error al validar inventario', '#d90429');
+                });
+        }
+        
+        function showMyStats() {
+            // Mostrar estadísticas personales del usuario actual
+            const currentUser = localStorage.getItem('vimaroni_user');
+            fetch('http://127.0.0.1:3001/api/productos')
+                .then(response => response.json())
+                .then(products => {
+                    const myProducts = products.filter(p => p.createdBy === currentUser);
+                    const myZones = [...new Set(myProducts.map(p => p.zona))];
+                    const today = new Date().toDateString();
+                    const todayProducts = myProducts.filter(p => 
+                        p.createdAt && new Date(p.createdAt).toDateString() === today
+                    );
+                    
+                    mostrarNotificacion(`Mis estadísticas: ${myProducts.length} productos totales, ${todayProducts.length} hoy, ${myZones.length} zonas activas.`, '#0077b6');
+                })
+                .catch(error => {
+                    console.error('Error al cargar estadísticas:', error);
+                    mostrarNotificacion('Error al cargar estadísticas', '#d90429');
+                });
+        }
+        
+        // Función para editar producto desde tabla
+        function editProduct(productId) {
+            // Buscar el producto en la lista global
+            if (window.allProducts) {
+                const product = window.allProducts.find(p => p._id === productId);
+                if (product) {
+                    // Llenar el formulario con los datos del producto
+                    document.getElementById('nombre').value = product.nombre;
+                    document.getElementById('marca').value = product.marca;
+                    document.getElementById('sku').value = product.sku;
+                    document.getElementById('zona').value = product.zona;
+                    document.getElementById('contenedor').value = product.contenedor;
+                    
+                    // Guardar el ID del producto para la actualización
+                    window.editingProductId = productId;
+                    
+                    // Cambiar el texto del botón y mostrar el formulario
+                    const submitBtn = document.querySelector('#add-product-form button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Actualizar Producto';
+                    }
+                    showAddProduct();
+                    
+                    mostrarNotificacion('Producto cargado para edición', '#ffc107');
+                }
+            }
+        }
+        function showAdminPanel() {
+            hideAllContainers();
+            document.getElementById('admin-panel-container').classList.remove('hidden');
+            
+            // Renovar sesión al acceder al panel admin
+            renewSession();
+            
+            // Mostrar dashboard por defecto
+            showAdminTab('dashboard');
+            loadAdminData();
+        }
+        
+        async function loadAdminData() {
+            // Cargar estadísticas de usuarios
+            await loadUserStats();
+            // Cargar actividad reciente
+            await loadRecentActivity();
+            // Cargar tabla completa de productos
+            await loadAdminProductsTable();
+        }
+        
+        async function loadUserStats() {
+            try {
+                const products = await VIMARONI_API.getProducts();
+                const userStats = {};
+                
+                products.forEach(product => {
+                    const createdBy = product.createdBy || 'desconocido';
+                    userStats[createdBy] = (userStats[createdBy] || 0) + 1;
+                });
+                
+                let statsHTML = '';
+                // Ordenar usuarios alfabéticamente
+                const sortedUsers = Object.entries(userStats).sort(([a], [b]) => a.localeCompare(b));
+                
+                sortedUsers.forEach(([user, count]) => {
+                    statsHTML += `
+                        <div class="user-stat">
+                            <span class="user-name">${user.charAt(0).toUpperCase() + user.slice(1)}</span>
+                            <span class="user-count">${count} productos</span>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('user-stats').innerHTML = statsHTML || '<p>No hay datos disponibles</p>';
+            } catch (error) {
+                console.error('Error al cargar estadísticas de usuarios:', error);
+                document.getElementById('user-stats').innerHTML = '<p>Error al cargar datos</p>';
+            }
+        }
+        
+        async function loadRecentActivity() {
+            try {
+                const products = await VIMARONI_API.getProducts();
+                
+                console.log('Productos cargados para actividad reciente:', products);
+                
+                const recentProducts = products
+                    .filter(p => p.createdAt && p.createdBy)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 5);
+                
+                console.log('Productos recientes filtrados:', recentProducts);
+                
+                let activityHTML = '';
+                recentProducts.forEach(product => {
+                    const date = new Date(product.createdAt);
+                    const chileDate = date.toLocaleDateString('es-CL', {
+                        timeZone: 'America/Santiago',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                    const chileTime = date.toLocaleTimeString('es-CL', {
+                        timeZone: 'America/Santiago',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    activityHTML += `
+                        <div class="activity-item">
+                            <strong>${product.nombre}</strong> agregado por <em>${product.createdBy || 'Desconocido'}</em>
+                            <span class="activity-date">${chileDate} ${chileTime}</span>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('recent-activity').innerHTML = activityHTML || '<p>No hay actividad reciente</p>';
+            } catch (error) {
+                console.error('Error al cargar actividad reciente:', error);
+                document.getElementById('recent-activity').innerHTML = '<p>Error al cargar datos</p>';
+            }
+        }
+        
+        async function loadAdminProductsTable() {
+            try {
+                const products = await VIMARONI_API.getProducts();
+                
+                console.log('Productos cargados para tabla admin:', products);
+                
+                // Guardar productos globalmente para filtros
+                window.allProducts = products;
+                
+                // Actualizar opciones de filtros
+                updateFilterOptions(products);
+                
+                // Renderizar tabla con todos los productos inicialmente
+                renderProductsTable(products);
+                
+            } catch (error) {
+                console.error('Error al cargar tabla de productos:', error);
+                document.getElementById('admin-products-list').innerHTML = '<tr><td colspan="7">Error al cargar datos</td></tr>';
+            }
+        }
+        
+        function updateFilterOptions(products) {
+            // Obtener zonas únicas y ordenarlas
+            const zonas = [...new Set(products.map(p => p.zona))].sort((a, b) => {
+                return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+            });
+            
+            // Obtener usuarios únicos y ordenarlos
+            const usuarios = [...new Set(products.map(p => p.createdBy || 'Desconocido'))].sort();
+            
+            // Actualizar select de zonas
+            const selectZona = document.getElementById('filter-zona');
+            const currentZona = selectZona.value;
+            selectZona.innerHTML = '<option value="">Todas las zonas</option>';
+            zonas.forEach(zona => {
+                const option = document.createElement('option');
+                option.value = zona;
+                option.textContent = `Zona ${zona}`;
+                if (zona === currentZona) option.selected = true;
+                selectZona.appendChild(option);
+            });
+            
+            // Actualizar select de usuarios
+            const selectUsuario = document.getElementById('filter-usuario');
+            const currentUsuario = selectUsuario.value;
+            selectUsuario.innerHTML = '<option value="">Todos los usuarios</option>';
+            usuarios.forEach(usuario => {
+                const option = document.createElement('option');
+                option.value = usuario;
+                option.textContent = usuario.charAt(0).toUpperCase() + usuario.slice(1);
+                if (usuario === currentUsuario) option.selected = true;
+                selectUsuario.appendChild(option);
+            });
+        }
+        
+        function renderProductsTable(products) {
+            let tableHTML = '';
+            
+            products.forEach(product => {
+                let date = 'N/A';
+                if (product.createdAt) {
+                    const dateObj = new Date(product.createdAt);
+                    date = dateObj.toLocaleDateString('es-CL', {
+                        timeZone: 'America/Santiago',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    }) + ' ' + dateObj.toLocaleTimeString('es-CL', {
+                        timeZone: 'America/Santiago',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+                
+                const createdBy = product.createdBy || 'Desconocido';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${product.nombre}</td>
+                        <td>${product.marca}</td>
+                        <td>${product.sku}</td>
+                        <td>${product.zona}</td>
+                        <td>${product.contenedor}</td>
+                        <td><strong>${createdBy.charAt(0).toUpperCase() + createdBy.slice(1)}</strong></td>
+                        <td>${date}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('admin-products-list').innerHTML = tableHTML || '<tr><td colspan="7">No hay productos registrados</td></tr>';
+            
+            // Actualizar contador de resultados
+            updateFilterCount(products.length);
+        }
+        
+        function applyFilters() {
+            if (!window.allProducts) return;
+            
+            const filterZona = document.getElementById('filter-zona').value;
+            const filterUsuario = document.getElementById('filter-usuario').value;
+            
+            let filteredProducts = window.allProducts;
+            
+            // Aplicar filtro de zona
+            if (filterZona) {
+                filteredProducts = filteredProducts.filter(product => product.zona === filterZona);
+            }
+            
+            // Aplicar filtro de usuario
+            if (filterUsuario) {
+                filteredProducts = filteredProducts.filter(product => 
+                    (product.createdBy || 'Desconocido') === filterUsuario
+                );
+            }
+            
+            // Renderizar productos filtrados
+            renderProductsTable(filteredProducts);
+            
+            console.log('Filtros aplicados:', { zona: filterZona, usuario: filterUsuario, resultados: filteredProducts.length });
+        }
+        
+        function clearFilters() {
+            document.getElementById('filter-zona').value = '';
+            document.getElementById('filter-usuario').value = '';
+            
+            if (window.allProducts) {
+                renderProductsTable(window.allProducts);
+            }
+            
+            // Renovar sesión al usar filtros
+            renewSession();
+        }
+        
+        function updateFilterCount(count) {
+            const filterCount = document.getElementById('filter-count');
+            const total = window.allProducts ? window.allProducts.length : 0;
+            
+            if (count === total) {
+                filterCount.textContent = `Mostrando todos los productos (${total})`;
+            } else {
+                filterCount.textContent = `Mostrando ${count} de ${total} productos`;
+            }
+        }
+        
+        // 👥 FUNCIONES DE GESTIÓN DE USUARIOS
+        function showAdminTab(tabName) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.admin-tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remover clase active de todos los botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Mostrar pestaña seleccionada
+            document.getElementById(`admin-${tabName}-tab`).classList.remove('hidden');
+            event.target.classList.add('active');
+            
+            // Cargar datos específicos de la pestaña
+            if (tabName === 'users') {
+                loadUsersTable();
+            } else if (tabName === 'products') {
+                loadAdminProductsTable();
+            }
+        }
+        
+        async function loadUsersTable() {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/usuarios');
+                const users = await response.json();
+                
+                let tableHTML = '';
+                users.forEach(user => {
+                    const createdDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('es-CL') : 'N/A';
+                    const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('es-CL') : 'Nunca';
+                    const status = user.active ? 'Activo' : 'Inactivo';
+                    const statusClass = user.active ? 'user-active' : 'user-inactive';
+                    
+                    tableHTML += `
+                        <tr>
+                            <td><strong>${user.username}</strong></td>
+                            <td>${user.fullName}</td>
+                            <td><span class="role-badge role-${user.role}">${user.role}</span></td>
+                            <td><span class="status-badge ${statusClass}">${status}</span></td>
+                            <td>${createdDate}</td>
+                            <td>${lastLogin}</td>
+                            <td>
+                                <button onclick="editUser('${user._id}')" class="edit-user-btn">✏️ Editar</button>
+                                <button onclick="deleteUser('${user._id}', '${user.username}')" class="delete-user-btn">🗑️ Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                document.getElementById('users-list').innerHTML = tableHTML || '<tr><td colspan="7">No hay usuarios registrados</td></tr>';
+                
+                // Guardar usuarios globalmente para edición
+                window.allUsers = users;
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+                document.getElementById('users-list').innerHTML = '<tr><td colspan="7">Error al cargar usuarios</td></tr>';
+            }
+        }
+        
+        function showCreateUserForm() {
+            document.getElementById('user-form-title').textContent = 'Crear Nuevo Usuario';
+            document.getElementById('user-form').reset();
+            document.getElementById('save-user-btn').textContent = '💾 Guardar Usuario';
+            document.getElementById('user-form-container').classList.remove('hidden');
+            
+            // Limpiar modo de edición
+            window.editingUserId = null;
+        }
+        
+        function cancelUserForm() {
+            document.getElementById('user-form-container').classList.add('hidden');
+            document.getElementById('user-form').reset();
+            window.editingUserId = null;
+        }
+        
+        async function editUser(userId) {
+            if (window.allUsers) {
+                const user = window.allUsers.find(u => u._id === userId);
+                if (user) {
+                    document.getElementById('user-form-title').textContent = 'Editar Usuario';
+                    document.getElementById('user-username').value = user.username;
+                    document.getElementById('user-fullname').value = user.fullName;
+                    document.getElementById('user-password').value = '';
+                    document.getElementById('user-password').placeholder = 'Dejar en blanco para no cambiar';
+                    document.getElementById('user-role').value = user.role;
+                    document.getElementById('save-user-btn').textContent = '💾 Actualizar Usuario';
+                    document.getElementById('user-form-container').classList.remove('hidden');
+                    
+                    window.editingUserId = userId;
+                }
+            }
+        }
+        
+        async function deleteUser(userId, username) {
+            if (confirm(`¿Estás seguro de que quieres eliminar al usuario "${username}"?`)) {
+                try {
+                    const response = await fetch(`http://127.0.0.1:3001/api/usuarios/${userId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        mostrarNotificacion('Usuario eliminado correctamente', '#28a745');
+                        loadUsersTable();
+                    } else {
+                        const error = await response.json();
+                        mostrarNotificacion(error.error || 'Error al eliminar usuario', '#d90429');
+                    }
+                } catch (error) {
+                    console.error('Error al eliminar usuario:', error);
+                    mostrarNotificacion('Error de conexión', '#d90429');
+                }
+            }
+        }
+        
+        // Event listener para el formulario de usuarios
+        document.addEventListener('DOMContentLoaded', function() {
+            const userForm = document.getElementById('user-form');
+            if (userForm) {
+                userForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const username = document.getElementById('user-username').value.trim();
+                    const fullName = document.getElementById('user-fullname').value.trim();
+                    const password = document.getElementById('user-password').value;
+                    const role = document.getElementById('user-role').value;
+                    const createdBy = localStorage.getItem('vimaroni_user');
+                    
+                    if (!username || !fullName || !role) {
+                        mostrarNotificacion('Todos los campos son obligatorios', '#d90429');
+                        return;
+                    }
+                    
+                    if (!window.editingUserId && !password) {
+                        mostrarNotificacion('La contraseña es obligatoria para nuevos usuarios', '#d90429');
+                        return;
+                    }
+                    
+                    const userData = { username, fullName, role, createdBy };
+                    if (password) {
+                        userData.password = password;
+                    }
+                    
+                    try {
+                        let response;
+                        if (window.editingUserId) {
+                            // Verificar si se está editando el perfil del admin actual
+                            const currentUser = localStorage.getItem('vimaroni_user');
+                            const isEditingOwnProfile = username === currentUser && currentUser === 'admin';
+                            
+                            if (isEditingOwnProfile) {
+                                // Mostrar modal de confirmación para admin
+                                showPasswordConfirmModal(userData, 'updateUser');
+                                return;
+                            } else {
+                                // Actualizar otros usuarios directamente
+                                response = await fetch(`http://127.0.0.1:3001/api/usuarios/${window.editingUserId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(userData)
+                                });
+                            }
+                        } else {
+                            // Crear nuevo usuario
+                            response = await fetch('http://127.0.0.1:3001/api/usuarios', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(userData)
+                            });
+                        }
+                        
+                        if (response && response.ok) {
+                            const action = window.editingUserId ? 'actualizado' : 'creado';
+                            mostrarNotificacion(`Usuario ${action} correctamente`, '#28a745');
+                            cancelUserForm();
+                            loadUsersTable();
+                        } else if (response && !response.ok) {
+                            const error = await response.json();
+                            mostrarNotificacion(error.error || 'Error al guardar usuario', '#d90429');
+                        }
+                    } catch (error) {
+                        console.error('Error al guardar usuario:', error);
+                        mostrarNotificacion('Error de conexión', '#d90429');
+                    }
+                });
+            }
+        });
+        
+        // Variables globales para el modal de confirmación
+        let pendingUserData = null;
+        let pendingAction = null;
+        
+        // Función para mostrar modal de confirmación de contraseña
+        function showPasswordConfirmModal(userData, action) {
+            pendingUserData = userData;
+            pendingAction = action;
+            document.getElementById('password-confirm-modal').style.display = 'flex';
+            document.getElementById('confirm-password-input').focus();
+            
+            // Permitir confirmar con Enter
+            document.getElementById('confirm-password-input').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    confirmPasswordAction();
+                }
+            });
+            
+            // Permitir cerrar con ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    cancelPasswordConfirm();
+                }
+            });
+        }
+        
+        // Función para cancelar la confirmación
+        function cancelPasswordConfirm() {
+            document.getElementById('password-confirm-modal').style.display = 'none';
+            document.getElementById('confirm-password-input').value = '';
+            pendingUserData = null;
+            pendingAction = null;
+        }
+        
+        // Función para confirmar la acción
+        async function confirmPasswordAction() {
+            const currentPassword = document.getElementById('confirm-password-input').value;
+            const currentUser = localStorage.getItem('vimaroni_user');
+            
+            if (!currentPassword) {
+                mostrarNotificacion('Por favor, ingrese su contraseña', '#d90429');
+                return;
+            }
+            
+            // Verificar contraseña actual
+            try {
+                const loginResponse = await fetch('http://127.0.0.1:3001/api/usuarios/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser,
+                        password: currentPassword
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    mostrarNotificacion('Contraseña incorrecta', '#d90429');
+                    return;
+                }
+                
+                // Si la contraseña es correcta, ejecutar la acción pendiente
+                if (pendingAction === 'updateUser') {
+                    await executeUserUpdate(pendingUserData);
+                }
+                
+                // Cerrar modal
+                cancelPasswordConfirm();
+                
+            } catch (error) {
+                console.error('Error al verificar contraseña:', error);
+                mostrarNotificacion('Error de conexión', '#d90429');
+            }
+        }
+        
+        // Función para ejecutar la actualización del usuario
+        async function executeUserUpdate(userData) {
+            try {
+                const response = await fetch(`http://127.0.0.1:3001/api/usuarios/${window.editingUserId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                
+                if (response.ok) {
+                    mostrarNotificacion('✅ Perfil actualizado correctamente', '#28a745');
+                    cancelUserForm();
+                    loadUsersTable();
+                } else {
+                    const errorData = await response.json();
+                    mostrarNotificacion(errorData.error || 'Error al actualizar usuario', '#d90429');
+                }
+            } catch (error) {
+                console.error('Error al actualizar usuario:', error);
+                mostrarNotificacion('Error de conexión', '#d90429');
+            }
+        }
     </script>
+    
+    <!-- Modal para confirmación de contraseña -->
+    <div id="password-confirm-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 Confirmación de Seguridad</h3>
+            </div>
+            <div class="modal-body">
+                <p>Por favor, ingrese su contraseña actual para confirmar los cambios en su perfil:</p>
+                <div class="input-group">
+                    <input type="password" id="confirm-password-input" placeholder="Contraseña actual" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="cancelPasswordConfirm()" class="btn-cancel">❌ Cancelar</button>
+                <button onclick="confirmPasswordAction()" class="btn-confirm">✅ Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
